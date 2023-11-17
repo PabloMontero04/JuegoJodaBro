@@ -5,6 +5,8 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Main extends JFrame {
     private int characterX = 50;  // Coordenada X del personaje
@@ -15,10 +17,11 @@ public class Main extends JFrame {
     private Image backgroundImage;  // Imagen de fondo
     private boolean facingRight = true;  // Indica si el personaje está mirando a la derecha
     private boolean jumping = false;  // Indica si el personaje está saltando
-    private int jumpHeight = 100;  // Altura del salto
+    private int jumpHeight = 250;  // Altura del salto
     private int jumpCount = 0;  // Contador para controlar la altura del salto
     private int jumpSpeed = 4;  // Velocidad del salto
-    private int moveSpeed =4 ;  // Velocidad de movimiento horizontal
+    private int moveSpeed = 4;  // Velocidad de movimiento horizontal
+    private List<DeadlyObject> deadlyObjects;
 
     public Main() {
         // Cargar la imagen de fondo
@@ -39,6 +42,11 @@ public class Main extends JFrame {
             e.printStackTrace();
         }
 
+        // Crear la lista de objetos mortales
+        deadlyObjects = new ArrayList<>();
+        deadlyObjects.add(new DeadlyObject(1700, 890, "src/img/gifplanta.gif"));
+        deadlyObjects.add(new DeadlyObject(800, 890, "src/img/gifplanta.gif"));
+
         setTitle("Mi Juego");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
@@ -47,7 +55,8 @@ public class Main extends JFrame {
         // Agregar un KeyListener para mover y saltar el personaje
         addKeyListener(new KeyListener() {
             @Override
-            public void keyTyped(KeyEvent e) {}
+            public void keyTyped(KeyEvent e) {
+            }
 
             @Override
             public void keyPressed(KeyEvent e) {
@@ -71,13 +80,14 @@ public class Main extends JFrame {
             }
 
             @Override
-            public void keyReleased(KeyEvent e) {}
+            public void keyReleased(KeyEvent e) {
+            }
         });
 
         // Asegurarse de que el JFrame pueda recibir eventos de teclado
         setFocusable(true);
 
-        // Configurar un temporizador para manejar el salto y la gravedad
+        // Configurar un temporizador para manejar el salto, la gravedad y los objetos mortales
         Timer timer = new Timer(10, (e) -> {
             if (jumping) {
                 // Aplicar una aceleración inicial al salto
@@ -113,10 +123,37 @@ public class Main extends JFrame {
                 characterX = getWidth() / 2;  // Centra el personaje
             }
 
+            // Verificar la colisión con los objetos mortales
+            for (DeadlyObject deadlyObject : deadlyObjects) {
+                if (collisionWithDeadlyObject(deadlyObject)) {
+                    // Acciones cuando hay una colisión (por ejemplo, terminar el juego)
+                    // Puedes mostrar un mensaje de "Game Over" y cerrar la aplicación.
+                    JOptionPane.showMessageDialog(this, "Game Over!");
+                    System.exit(0);  // Cierra la aplicación
+                }
+            }
+
             // Vuelve a dibujar la pantalla
             repaint();
         });
         timer.start();
+    }
+
+    // Método para verificar la colisión con un objeto mortal específico
+    private boolean collisionWithDeadlyObject(DeadlyObject deadlyObject) {
+        Rectangle characterBounds = new Rectangle(characterX, characterY, characterWidth, characterWidth);
+        Rectangle deadlyObjectBounds = new Rectangle(deadlyObject.getX(), deadlyObject.getY(),
+                deadlyObject.getWidth(), deadlyObject.getHeight());
+
+        boolean collision = characterBounds.intersects(deadlyObjectBounds);
+
+        // Verifica si el objeto mortal es saltado y marca la planta como saltada
+        if (collision && !deadlyObject.isJumpedOver()) {
+            deadlyObject.setJumpedOver(true);
+            return false;  // Evita la colisión después de saltar
+        }
+
+        return collision;
     }
 
     @Override
@@ -127,6 +164,14 @@ public class Main extends JFrame {
 
         // Dibujar el fondo en el buffer de imagen
         g2d.drawImage(backgroundImage, -backgroundX, 0, this);
+
+        // Dibujar los objetos mortales no saltados en el buffer de imagen
+        for (DeadlyObject deadlyObject : deadlyObjects) {
+            if (!deadlyObject.isJumpedOver()) {
+                g2d.drawImage(deadlyObject.getImage(), deadlyObject.getX(), deadlyObject.getY(),
+                        deadlyObject.getWidth(), deadlyObject.getHeight(), this);
+            }
+        }
 
         // Dibujar el personaje en el buffer de imagen
         if (facingRight) {
