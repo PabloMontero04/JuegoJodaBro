@@ -9,27 +9,18 @@ import java.awt.image.BufferedImage;
 public class Main extends JFrame {
     private int characterX = 50;  // Coordenada X del personaje
     private int characterY = 900;  // Coordenada Y del personaje
+    private int characterWidth = 50;  // Ancho del personaje
     private int backgroundX = 0;  // Coordenada X del fondo
     private Image characterImage;  // Imagen del personaje
     private Image backgroundImage;  // Imagen de fondo
-    private boolean isJumping = false;  // Bandera para indicar si el personaje está saltando
+    private boolean facingRight = true;  // Indica si el personaje está mirando a la derecha
+    private boolean jumping = false;  // Indica si el personaje está saltando
     private int jumpHeight = 100;  // Altura del salto
     private int jumpCount = 0;  // Contador para controlar la altura del salto
-    private boolean isFacingLeft = false;  // Bandera para indicar si el personaje está mirando hacia la izquierda
-
-    private BufferedImage bufferImage;
-    private Graphics bufferGraphics;
-
-    private int characterSpeed = 2;  // Velocidad de movimiento del personaje
+    private int jumpSpeed = 4;  // Velocidad del salto
+    private int moveSpeed =4 ;  // Velocidad de movimiento horizontal
 
     public Main() {
-        // Cargar la imagen del personaje
-        try {
-            characterImage = new ImageIcon("src/img/YodaBuenoAndando.gif").getImage();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
         // Cargar la imagen de fondo
         try {
             backgroundImage = new ImageIcon("src/img/fondofinal.jpg").getImage();
@@ -41,9 +32,12 @@ public class Main extends JFrame {
             setSize(800, 600);
         }
 
-        // Crear el búfer de imagen
-        bufferImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
-        bufferGraphics = bufferImage.getGraphics();
+        // Cargar la imagen del personaje
+        try {
+            characterImage = new ImageIcon("src/img/YodaBuenoAndando.gif").getImage();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         setTitle("Mi Juego");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -59,20 +53,18 @@ public class Main extends JFrame {
             public void keyPressed(KeyEvent e) {
                 // Mueve el personaje con las teclas de flecha
                 if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-                    characterX -= characterSpeed;
-                    isFacingLeft = true;
+                    characterX -= moveSpeed;
+                    facingRight = false;
                 } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-                    characterX += characterSpeed;
-                    isFacingLeft = false;
+                    characterX += moveSpeed;
+                    facingRight = true;
                 }
 
-                // Salta con la tecla de espacio si el personaje no está actualmente saltando
-                if (e.getKeyCode() == KeyEvent.VK_SPACE && !isJumping) {
-                    isJumping = true;
+                // Salto cuando se presiona la tecla de espacio o la tecla de flecha hacia arriba
+                if ((e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_UP) && !jumping) {
+                    jumping = true;
+                    jumpCount = 0;  // Reiniciar el contador al comenzar un nuevo salto
                 }
-
-                // Ajusta la posición del fondo en función de la posición del personaje
-                backgroundX = characterX - getWidth() / 4;
 
                 // Vuelve a dibujar la pantalla
                 repaint();
@@ -85,21 +77,43 @@ public class Main extends JFrame {
         // Asegurarse de que el JFrame pueda recibir eventos de teclado
         setFocusable(true);
 
-        // Configurar un temporizador para manejar el salto
-        Timer timer = new Timer(6, e -> {
-            if (isJumping) {
-                // Realizar el salto
-                jumpCount++;
-                characterY -= 1.5;
-                if (jumpCount >= jumpHeight) {
-                    isJumping = false;
-                    jumpCount = 0;
+        // Configurar un temporizador para manejar el salto y la gravedad
+        Timer timer = new Timer(10, (e) -> {
+            if (jumping) {
+                // Aplicar una aceleración inicial al salto
+                if (jumpCount < jumpHeight / 2) {
+                    characterY -= jumpSpeed;  // Ajusta la velocidad inicial del salto
+                } else {
+                    characterY += jumpSpeed;  // Aplicar desaceleración al descender
                 }
-            } else if (characterY < 900) {
-                // Descender después del salto
-                characterY += 3;
+
+                // Avanzar en el eje x mientras salta
+                if (facingRight) {
+                    characterX += moveSpeed;
+                } else {
+                    characterX -= moveSpeed;
+                }
+
+                jumpCount += jumpSpeed;
+
+                // Si se alcanza la altura máxima del salto, detener el salto
+                if (jumpCount >= jumpHeight) {
+                    jumping = false;
+                }
+            } else {
+                // Si no está saltando, aplicar la gravedad
+                if (characterY < 900) {
+                    characterY += 3;
+                }
             }
 
+            // Ajusta la posición del fondo en función de la posición del personaje
+            if (characterX > getWidth() / 2) {
+                backgroundX += moveSpeed;  // Avanza el fondo
+                characterX = getWidth() / 2;  // Centra el personaje
+            }
+
+            // Vuelve a dibujar la pantalla
             repaint();
         });
         timer.start();
@@ -107,18 +121,23 @@ public class Main extends JFrame {
 
     @Override
     public void paint(Graphics g) {
-        // Dibujar en el búfer de imagen
-        bufferGraphics.drawImage(backgroundImage, -backgroundX, 0, this);
+        // Crear un buffer de imagen
+        BufferedImage buffer = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = buffer.createGraphics();
 
-        // Determinar la dirección del personaje y dibujar la imagen correspondiente
-        if (isFacingLeft) {
-            bufferGraphics.drawImage(characterImage, characterX + 50, characterY, -50, 50, this);
+        // Dibujar el fondo en el buffer de imagen
+        g2d.drawImage(backgroundImage, -backgroundX, 0, this);
+
+        // Dibujar el personaje en el buffer de imagen
+        if (facingRight) {
+            g2d.drawImage(characterImage, characterX, characterY, characterWidth, characterWidth, this);
         } else {
-            bufferGraphics.drawImage(characterImage, characterX, characterY, 50, 50, this);
+            // Si el personaje está mirando a la izquierda, invertir la imagen
+            g2d.drawImage(characterImage, characterX + characterWidth, characterY, -characterWidth, characterWidth, this);
         }
 
-        // Dibujar el búfer en la pantalla
-        g.drawImage(bufferImage, 0, 0, this);
+        // Dibujar el buffer de imagen en el JFrame
+        g.drawImage(buffer, 0, 0, this);
     }
 
     public static void main(String[] args) {
