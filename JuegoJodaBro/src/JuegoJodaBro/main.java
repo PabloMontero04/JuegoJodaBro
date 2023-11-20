@@ -118,7 +118,7 @@ public class Main extends JFrame {
             }
 
             // Ajusta la posición del fondo en función de la posición del personaje
-            if (characterX > getWidth() / 2) {
+            if (facingRight && characterX > getWidth() / 2) {
                 backgroundX += moveSpeed;  // Avanza el fondo
                 characterX = getWidth() / 2;  // Centra el personaje
             }
@@ -140,21 +140,27 @@ public class Main extends JFrame {
     }
 
     // Método para verificar la colisión con un objeto mortal específico
+ // Método para verificar la colisión con un objeto mortal específico
+ // Método para verificar la colisión con un objeto mortal específico
+ // Método para verificar la colisión con un objeto mortal específico
     private boolean collisionWithDeadlyObject(DeadlyObject deadlyObject) {
         Rectangle characterBounds = new Rectangle(characterX, characterY, characterWidth, characterWidth);
-        Rectangle deadlyObjectBounds = new Rectangle(deadlyObject.getX(), deadlyObject.getY(),
+        Rectangle deadlyObjectBounds = new Rectangle(deadlyObject.getX() - backgroundX, deadlyObject.getY(),
                 deadlyObject.getWidth(), deadlyObject.getHeight());
 
         boolean collision = characterBounds.intersects(deadlyObjectBounds);
 
-        // Verifica si el objeto mortal es saltado y marca la planta como saltada
-        if (collision && !deadlyObject.isJumpedOver()) {
+        // Verifica si el objeto mortal ha sido saltado y si el jugador está encima de la planta
+        if (collision && !deadlyObject.isJumpedOver() && characterY + characterWidth <= deadlyObject.getY()) {
             deadlyObject.setJumpedOver(true);
             return false;  // Evita la colisión después de saltar
         }
 
         return collision;
     }
+
+
+
 
     @Override
     public void paint(Graphics g) {
@@ -165,12 +171,10 @@ public class Main extends JFrame {
         // Dibujar el fondo en el buffer de imagen
         g2d.drawImage(backgroundImage, -backgroundX, 0, this);
 
-        // Dibujar los objetos mortales no saltados en el buffer de imagen
+        // Dibujar las plantas estáticas en el buffer de imagen
         for (DeadlyObject deadlyObject : deadlyObjects) {
-            if (!deadlyObject.isJumpedOver()) {
-                g2d.drawImage(deadlyObject.getImage(), deadlyObject.getX(), deadlyObject.getY(),
-                        deadlyObject.getWidth(), deadlyObject.getHeight(), this);
-            }
+            g2d.drawImage(deadlyObject.getImage(), deadlyObject.getX() - backgroundX, deadlyObject.getY(),
+                    deadlyObject.getWidth(), deadlyObject.getHeight(), this);
         }
 
         // Dibujar el personaje en el buffer de imagen
