@@ -10,7 +10,7 @@ import java.util.List;
 
 public class main extends JFrame {
     private int characterX = 50;  // Coordenada X del personaje
-    private int characterY = 900;  // Coordenada Y del personaje
+    private int characterY = 300;  // Coordenada Y del personaje
     private int characterWidth = 50;  // Ancho del personaje
     private int backgroundX = 0;  // Coordenada X del fondo
     private Image characterImage;  // Imagen del personaje
@@ -23,6 +23,12 @@ public class main extends JFrame {
     private int moveSpeed = 4;  // Velocidad de movimiento horizontal
     private List<DeadlyObject> deadlyObjects;
     private List<Platform> platforms;
+    
+	Toolkit mipantalla=Toolkit.getDefaultToolkit();
+	Dimension tamanoPantalla=mipantalla.getScreenSize();
+	
+	int alturaPantalla=tamanoPantalla.height;
+	int anchoPantalla=tamanoPantalla.width;
 
 
     public main() {
@@ -30,12 +36,15 @@ public class main extends JFrame {
         try {
             backgroundImage = new ImageIcon("src/img/fondofinal.jpg").getImage();
             // Configurar el tamaño del JFrame según el tamaño de la imagen de fondo
+            backgroundImage = resizeBackground(backgroundImage, 3200, 600);
             setSize(backgroundImage.getWidth(null), backgroundImage.getHeight(null));
         } catch (Exception e) {
             e.printStackTrace();
             // Si hay un problema al cargar la imagen de fondo, establecer un tamaño predeterminado
             setSize(800, 600);
         }
+        setPreferredSize(new Dimension(800, 600));
+        setLocation((anchoPantalla - 800) / 2, (alturaPantalla - 600) / 2);      
 
         // Cargar la imagen del personaje
         try {
@@ -46,18 +55,20 @@ public class main extends JFrame {
 
         // Crear la lista de objetos mortales
         deadlyObjects = new ArrayList<>();
-        deadlyObjects.add(new DeadlyObject(1700, 890, "src/img/gifplanta.gif"));
-        deadlyObjects.add(new DeadlyObject(800, 890, "src/img/gifplanta.gif"));
+        deadlyObjects.add(new DeadlyObject(944, 475, "src/img/gifplanta.gif"));
+        deadlyObjects.add(new DeadlyObject(444, 475, "src/img/gifplanta.gif"));
         
         platforms = new ArrayList<>();
-        platforms.add(new Platform(200, 800, 200, 40));  // Ejemplo de plataforma en la posición (200, 800) con ancho 200 y altura 20
-        platforms.add(new Platform(600, 700, 150, 40));  // Ejemplo de otra plataforma
+        platforms.add(new Platform(111, 444, 111, 22));  // Ejemplo de plataforma en la posición (200, 800) con ancho 200 y altura 20
+        platforms.add(new Platform(333, 388, 83, 22));  // Ejemplo de otra plataforma
 
 
         setTitle("Mi Juego");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setLocationRelativeTo(null);
+		setLocation(anchoPantalla/4,alturaPantalla/4);
+
 
         // Agregar un KeyListener para mover y saltar el personaje
         addKeyListener(new KeyListener() {
@@ -119,7 +130,7 @@ public class main extends JFrame {
                 }
             } else {
                 // Si no está saltando, aplicar la gravedad
-                if (characterY < 900) {
+                if (characterY < 485) {
                     characterY += 3;
                 }
             }
@@ -139,11 +150,11 @@ public class main extends JFrame {
                     System.exit(0);  // Cierra la aplicación
                 }
             }
-            if (backgroundX >= 4128) {
+            if (backgroundX >= 2293) {
                 // El jugador ha perdido
                 JOptionPane.showMessageDialog(this, "¡Has ganado!");
                 System.exit(0);  // Cierra la aplicación
-            }
+            } 
 
             // Vuelve a dibujar la pantalla
             repaint();
@@ -151,9 +162,10 @@ public class main extends JFrame {
         timer.start();
     }
 
-    // Método para verificar la colisión con un objeto mortal específico
- // Método para verificar la colisión con un objeto mortal específico
- // Método para verificar la colisión con un objeto mortal específico
+    private Image resizeBackground(Image originalBackground, int width, int height) {
+        return originalBackground.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+    }
+
  // Método para verificar la colisión con un objeto mortal específico
     private boolean collisionWithDeadlyObject(DeadlyObject deadlyObject) {
         Rectangle characterBounds = new Rectangle(characterX, characterY, characterWidth, characterWidth);
@@ -230,6 +242,7 @@ public class main extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             main game = new main();
+            game.pack();
             game.setVisible(true);
         });
     }
