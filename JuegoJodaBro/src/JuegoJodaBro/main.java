@@ -67,7 +67,7 @@ public class main extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setLocationRelativeTo(null);
-		setLocation(anchoPantalla/4,alturaPantalla/4);
+        setLocation((anchoPantalla - 800) / 2, (alturaPantalla - 600) / 2);      
 
 
         // Agregar un KeyListener para mover y saltar el personaje
