@@ -26,6 +26,9 @@ public class DeadlyObject {
         }
     }
 
+    
+   
+    
     public int getX() {
         return x;
     }

@@ -7,6 +7,7 @@ import javax.swing.ImageIcon;
 
 public class Platform {
     private int x, y, width, height;
+    private final int originalX;
     private final int fixedX;  // La posición X fija para la plataforma
     private Image platformImage;  // Imagen de la plataforma
 
@@ -17,6 +18,8 @@ public class Platform {
         this.y = y;
         this.width = width;
         this.height = height;
+        this.originalX = fixedX;
+
         try {
             // Cargar la imagen de la plataforma
             platformImage = new ImageIcon(imagePath).getImage();
@@ -26,6 +29,8 @@ public class Platform {
             e.printStackTrace();
         }
     }
+    
+   
 
     // Otros métodos de la clase Platform...
 
