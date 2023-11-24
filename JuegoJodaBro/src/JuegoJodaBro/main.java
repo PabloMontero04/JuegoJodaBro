@@ -10,7 +10,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Main extends JFrame {
+public class main extends JFrame {
     private int characterX = 50;  // Coordenada X del personaje
     private int characterY = 300;  // Coordenada Y del personaje
     private int characterWidth = 50;  // Ancho del personaje
@@ -19,7 +19,7 @@ public class Main extends JFrame {
     private Image backgroundImage;  // Imagen de fondo
     private boolean facingRight = true;  // Indica si el personaje está mirando a la derecha
     private boolean jumping = false;  // Indica si el personaje está saltando
-    private int jumpHeight = 250;  // Altura del salto
+    private int jumpHeight = 350;  // Altura del salto
     private int jumpCount = 0;  // Contador para controlar la altura del salto
     private int jumpSpeed = 4;  // Velocidad del salto
     private int moveSpeed = 4;  // Velocidad de movimiento horizontal
@@ -40,7 +40,7 @@ public class Main extends JFrame {
     int alturaPantalla = tamanoPantalla.height;
     int anchoPantalla = tamanoPantalla.width;
 
-    public Main() {
+    public main() {
         // Cargar la imagen de fondo
         try {
             backgroundImage = new ImageIcon("src/img/fondofinal.jpg").getImage();
@@ -180,7 +180,12 @@ public class Main extends JFrame {
 
         // Configurar un temporizador para manejar el salto, la gravedad y los objetos mortales
         Timer timer = new Timer(10, (e) -> {
-            if (jumping) {
+        	  // Verificar si el personaje está en los valores específicos de X y en el suelo
+            if ((backgroundX >= 600 && backgroundX <= 715 || backgroundX >= 1165 && backgroundX <= 1210) && characterY >= 485) {
+                // Restar una vida al personaje
+                lives--;
+            }
+        	if (jumping) {
                 // Aplicar una aceleración inicial al salto
                 if (jumpCount < jumpHeight / 2) {
                     characterY -= jumpSpeed;  // Ajusta la velocidad inicial del salto
@@ -248,7 +253,7 @@ public class Main extends JFrame {
                     actualizarMensaje("¡Has recogido una moneda! Total de monedas: " + contadorMonedas);
                 }
             }
-            
+            mostrarValores();
             labelContadorMonedas.setText("Monedas: " + contadorMonedas);
             labelContadorMonedas.repaint();
             repaint();
@@ -258,7 +263,12 @@ public class Main extends JFrame {
         });
         timer.start();
     }
-
+    // Método para mostrar los valores de backgroundX, characterX, characterY, y backgroundY
+    private void mostrarValores() {
+        System.out.println("backgroundX: " + backgroundX +
+                ", characterX: " + characterX +
+                ", characterY: " + characterY);
+    }
     private Image resizeBackground(Image originalBackground, int width, int height) {
         return originalBackground.getScaledInstance(width, height, Image.SCALE_SMOOTH);
     }
@@ -319,10 +329,13 @@ public class Main extends JFrame {
         // Dibujar las plataformas en el buffer de imagen
         for (Platform platform : platforms) {
             // Verificar la colisión con las plataformas
-            if (collisionWithPlatform(platform)) {
-                jumping = false;  // Si colisiona con una plataforma, detener el salto
+            if ((collisionWithPlatform(platform))&& characterY <= platform.getY()) {
+          
+            	jumping = false;  // Si colisiona con una plataforma, detener el salto
                 jumpCount = 0;    // Reiniciar el contador de salto
-                characterY = platform.getY() - characterWidth;  // Ajustar la posición del personaje al nivel de la plataforma
+               characterY = platform.getY() - characterWidth;  // Ajustar la posición del personaje al nivel de la plataforma
+            } else if ((collisionWithPlatform(platform))&& characterY > platform.getY()) {
+            	jumping = false; 
             }
 
             // Dibujar la plataforma usando las coordenadas y dimensiones almacenadas
@@ -333,7 +346,7 @@ public class Main extends JFrame {
             g2d.drawImage(coin.getImage(), coin.getX() - backgroundX, coin.getY(),
                     coin.getWidth(), coin.getHeight(), this);
         }
-
+//hola
         // Dibujar el personaje en el buffer de imagen
         if (facingRight) {
             g2d.drawImage(characterImage, characterX, characterY, characterWidth, characterWidth, this);
@@ -372,7 +385,7 @@ public class Main extends JFrame {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            Main game = new Main();
+            main game = new main();
             game.pack();
             game.setVisible(true);
         });
